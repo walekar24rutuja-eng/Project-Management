@@ -1,0 +1,187 @@
+#root {
+  width: 100%;
+  border: 0;
+}
+
+#root > div {
+  background: radial-gradient(ellipse at 85% -15%, #452089 0, transparent 48%),
+    var(--background);
+}
+
+.sidebar {
+  background: radial-gradient(ellipse at 0 110%, #4b248f, transparent 50%),
+    linear-gradient(160deg, #1b1537, #121126 70%);
+  border-right: 1px solid var(--border);
+}
+
+.sidebar .sidebar-brand-icon {
+  background: linear-gradient(140deg, #6534af, #302053);
+  color: #dbb7ff;
+  border: 1px solid #644395;
+}
+
+.sidebar .sidebar-brand span,
+.sidebar .sidebar-user-details span {
+  color: #c7b7e8;
+}
+
+.sidebar .sidebar-link {
+  padding-block: 15px;
+  color: #ded2f7;
+}
+
+.sidebar .sidebar-link svg,
+.sidebar .sidebar-logout svg {
+  color: #c9a7ff;
+}
+
+.sidebar .sidebar-link:hover {
+  background: #2b2047;
+}
+
+.sidebar .sidebar-link.active {
+  background: linear-gradient(110deg, #6032bd, #3a256e);
+  box-shadow: inset 4px 0 #b477ff;
+  color: #fff;
+}
+
+.sidebar .sidebar-user {
+  border-color: var(--border);
+}
+
+.sidebar .sidebar-avatar {
+  background: #100c22;
+  border: 1px solid #9565d5;
+}
+
+.sidebar ~ .dashboard-page {
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.65;
+  max-width: none;
+  width: auto;
+}
+
+.sidebar ~ .dashboard-page > h2 {
+  color: #faf8ff;
+  font-size: clamp(26px, 2.5vw, 38px);
+  line-height: 1.2;
+  letter-spacing: -0.6px;
+  margin: 6px 0 12px;
+}
+
+.sidebar ~ .dashboard-page :is(h3, h4, h5, strong) {
+  color: #f3edff;
+}
+
+.sidebar ~ .dashboard-page :is(.student-panel, .meeting-card, .meetings-empty) {
+  background: linear-gradient(135deg, #211a40, #17152e);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.sidebar ~ .dashboard-page .student-project-card {
+  border-left: 5px solid #a25bf7;
+}
+
+.sidebar ~ .dashboard-page .student-notification {
+  background: #201b3b;
+  border-color: var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.sidebar ~ .dashboard-page :is(input, select, textarea) {
+  background: #24203f;
+  color: #f2edff;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 11px 13px;
+  accent-color: #ac75ff;
+}
+
+.sidebar ~ .dashboard-page input::placeholder,
+.sidebar ~ .dashboard-page textarea::placeholder {
+  color: #b6a8d1;
+  opacity: 1;
+}
+
+.sidebar ~ .dashboard-page button {
+  background: linear-gradient(110deg, #9556f5, #6729df) !important;
+  color: #fff !important;
+  border: 1px solid #9c66eb;
+  border-radius: 10px;
+  min-height: 40px;
+  padding: 9px 15px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sidebar ~ .dashboard-page button:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.sidebar ~ .dashboard-page button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+:is(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid #d3b1ff;
+  outline-offset: 3px;
+}
+
+.sidebar ~ .dashboard-page a {
+  color: #d0a8ff;
+}
+
+.sidebar ~ .dashboard-page .student-actions-sidebar {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.sidebar ~ .dashboard-page .student-actions-sidebar .student-panel:last-child button {
+  background: transparent !important;
+  color: #d1a7ff !important;
+  border-color: #ae75fa;
+}
+
+.sidebar ~ .dashboard-page .status-approved {
+  color: #53edbb;
+  background: #153b3e;
+  border-radius: 30px;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.sidebar ~ .dashboard-page :is(.students-error, .meetings-error) {
+  background: var(--danger-bg);
+  border-color: var(--danger-border);
+  color: var(--danger);
+}
+
+.sidebar ~ .dashboard-page .student-success {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+  color: var(--success-text);
+}
+
+.sidebar ~ .dashboard-loading {
+  color: var(--muted-text);
+}
+
+@media (max-width: 760px) {
+  .sidebar ~ .dashboard-page :is(.student-panel, .meeting-card) {
+    padding: 18px;
+  }
+
+  .sidebar ~ .dashboard-page .student-project-heading,
+  .sidebar ~ .dashboard-page .join-request {
+    flex-wrap: wrap;
+  }
+}

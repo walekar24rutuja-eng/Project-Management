@@ -1,0 +1,414 @@
+.project-details-page {
+  text-align: left;
+  max-width: 1200px;
+}
+
+.project-back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  text-decoration: none;
+}
+
+.project-details-header,
+.project-section-heading,
+.project-milestone-heading,
+.project-membership-request {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.project-details-header {
+  margin-bottom: 24px;
+}
+
+.project-details-header h2,
+.project-details-header p,
+.project-section-heading h3,
+.project-milestone h4,
+.project-phase-description,
+.project-milestone p {
+  margin: 0;
+}
+
+.project-details-subtitle,
+.project-kicker,
+.project-phase-description,
+.project-milestone-heading p,
+.project-team-member span,
+.project-meeting span {
+  color: var(--muted-text);
+}
+
+.project-kicker {
+  margin: 0 0 5px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.project-details-subtitle {
+  margin-top: 7px !important;
+}
+
+.project-status-badge,
+.milestone-status {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  padding: 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.project-details-card {
+  margin-bottom: 20px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.project-section-heading {
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.project-progress-percent {
+  color: var(--primary);
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.project-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.project-team-member,
+.project-meeting,
+.milestone-history-entry {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+}
+
+.project-team-member span,
+.milestone-history-entry small {
+  font-size: 12px;
+}
+
+.project-submitted-link,
+.project-faculty-feedback {
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.project-edit-form,
+.milestone-submit-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.project-edit-form h4 {
+  margin: 0;
+}
+
+.project-edit-form label,
+.milestone-submit-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.project-edit-form input,
+.milestone-submit-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+}
+
+.project-membership-requests {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.project-membership-requests h4 {
+  margin: 0;
+}
+
+.project-membership-request {
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+.project-membership-request span {
+  flex: 1 1 240px;
+}
+
+.project-secondary-button {
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+.project-phase-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.project-phase {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+}
+
+.project-phase > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.project-phase > summary::-webkit-details-marker {
+  display: none;
+}
+
+.project-phase-indicator {
+  display: grid;
+  flex: 0 0 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--muted-text);
+  font-weight: 700;
+}
+
+.project-phase-indicator.completed {
+  border-color: var(--success);
+  background: var(--success);
+  color: #0c2020;
+}
+
+.project-phase-title {
+  display: grid;
+  flex: 1;
+  gap: 3px;
+}
+
+.project-phase-title small {
+  color: var(--muted-text);
+}
+
+.project-phase-percent {
+  font-weight: 700;
+}
+
+.project-phase-description {
+  padding: 0 15px 12px;
+  font-size: 13px;
+}
+
+.project-milestone-list {
+  display: grid;
+  gap: 10px;
+  padding: 0 12px 12px;
+}
+
+.project-milestone {
+  display: grid;
+  gap: 12px;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+}
+
+.project-milestone-heading {
+  align-items: center;
+}
+
+.project-milestone-heading > div {
+  display: grid;
+  gap: 4px;
+}
+
+.project-milestone-heading p {
+  font-size: 13px;
+}
+
+.milestone-status-pending {
+  color: var(--muted-text);
+}
+
+.milestone-status-in_progress {
+  color: #60a5fa;
+}
+
+.milestone-status-submitted {
+  color: #c084fc;
+}
+
+.milestone-status-completed {
+  color: var(--success);
+}
+
+.milestone-feedback {
+  padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+  border-radius: 5px;
+  background: var(--accent-bg);
+}
+
+.milestone-feedback p {
+  margin: 4px 0;
+}
+
+.milestone-feedback small {
+  color: var(--muted-text);
+}
+
+.milestone-history {
+  display: grid;
+  gap: 8px;
+}
+
+.milestone-history > summary {
+  width: fit-content;
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.milestone-history-entry p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.milestone-review-entry {
+  border-left: 3px solid var(--accent);
+}
+
+.project-review-link {
+  width: fit-content;
+}
+
+.project-meeting-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.project-meeting span {
+  font-size: 12px;
+}
+
+.project-meeting p {
+  margin: 4px 0 0;
+}
+
+.project-details-error,
+.project-details-success {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
+
+.project-details-error {
+  color: #fda4af;
+  background: #441c32;
+}
+
+.project-details-success {
+  color: #86efac;
+  background: #133a34;
+}
+
+.mentor-review-list {
+  display: grid;
+  gap: 16px;
+}
+
+.mentor-review-submission {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--background);
+}
+
+.mentor-review-submission p {
+  margin: 8px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mentor-review-feedback {
+  display: grid;
+  gap: 6px;
+  font-weight: 600;
+}
+
+.mentor-review-feedback textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--text);
+  font: inherit;
+}
+
+.mentor-review-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+@media (max-width: 760px) {
+  .project-details-card {
+    padding: 17px;
+  }
+
+  .project-details-header,
+  .project-section-heading,
+  .project-milestone-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .project-phase > summary {
+    flex-wrap: wrap;
+  }
+
+  .project-phase-percent {
+    margin-left: 46px;
+  }
+}

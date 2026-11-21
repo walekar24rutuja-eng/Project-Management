@@ -1,0 +1,60 @@
+.student-team-page.dashboard-page {
+  max-width: none;
+  width: auto;
+}
+
+.student-desktop-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+.student-desktop-layout:not(:has(.student-actions-sidebar)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.student-workspace {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.student-workspace > .student-project-list {
+  order: -1;
+}
+
+.student-actions-sidebar.student-project-options {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding-left: 20px;
+  border-left: 1px solid var(--border);
+}
+
+.student-actions-sidebar .student-panel {
+  margin: 0;
+}
+
+.student-actions-sidebar button {
+  width: 100%;
+  min-height: 40px;
+  white-space: normal;
+}
+
+.student-workspace .student-panel {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+  .student-desktop-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .student-actions-sidebar.student-project-options {
+    padding: 20px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+}
