@@ -22,6 +22,7 @@ frontend/
 ```
 
 The API client is at `src/services/api.js` and uses `http://localhost:5000/api` for local development.
+Set `VITE_API_URL` in Vercel to the deployed backend URL including `/api`.
 
 ## Development
 

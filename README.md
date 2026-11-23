@@ -88,6 +88,33 @@ npm run lint
 npm run build
 ```
 
+## Vercel deployment
+
+Deploy the `frontend/` directory and `backend/` directory as separate Vercel projects.
+
+In the backend Vercel project, set these environment variables:
+
+```text
+MONGO_URI=<MongoDB Atlas connection string>
+JWT_SECRET=<random secret with at least 32 characters>
+ADMIN_NAME=<initial administrator name>
+ADMIN_EMAIL=<initial administrator email>
+ADMIN_PASSWORD=<initial administrator password>
+CLOUDINARY_CLOUD_NAME=<optional>
+CLOUDINARY_API_KEY=<optional>
+CLOUDINARY_API_SECRET=<optional>
+```
+
+Set the backend project root directory to `backend`. The included `vercel.json` exports the Express application as a serverless function.
+
+In the frontend Vercel project, set `VITE_API_URL` to the deployed backend URL including `/api`, for example:
+
+```text
+VITE_API_URL=https://project-management-api.vercel.app/api
+```
+
+Set the frontend project root directory to `frontend`, then redeploy after changing environment variables.
+
 ## Main documentation
 
 - [FEATURES.md](FEATURES.md) - implemented workflows and API reference
