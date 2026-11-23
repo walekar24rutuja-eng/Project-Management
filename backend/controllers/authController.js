@@ -1,22 +1,22 @@
 const User = require('../models/User');
-const Project = require('../models/Project');
-const Task = require('../models/Task');
-const Notification = require('../models/Notification');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const DEPARTMENTS = require('../utils/departments');
+const { deleteStudentAccount, deleteMentorAccount } = require('../utils/accountDeletion');
 
 // Public registration is student-only; mentors and admins are provisioned separately.
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, rollNumber } = req.body;
+    const { name, email, password, role, rollNumber, department } = req.body;
 
     if (
       typeof name !== 'string' || !name.trim() ||
       typeof email !== 'string' || !email.trim() ||
       typeof password !== 'string' || !password ||
-      typeof rollNumber !== 'string' || !rollNumber.trim()
+      typeof rollNumber !== 'string' || !rollNumber.trim() ||
+      typeof department !== 'string' || !DEPARTMENTS.includes(department)
     ) {
-      return res.status(400).json({ message: 'Name, email, password, and roll number are required' });
+      return res.status(400).json({ message: 'Name, email, password, roll number, and a valid department are required' });
     }
 
     if (role && role !== 'STUDENT') {
@@ -37,7 +37,8 @@ exports.register = async (req, res) => {
       email: normalizedEmail,
       password: hashedPassword,
       role: 'STUDENT',
-      rollNumber: rollNumber.trim()
+      rollNumber: rollNumber.trim(),
+      department
     });
 
     const token = jwt.sign(
@@ -53,7 +54,8 @@ exports.register = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        rollNumber: user.rollNumber
+        rollNumber: user.rollNumber,
+        department: user.department
       }
     });
   } catch (error) {
@@ -99,7 +101,8 @@ exports.login = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        rollNumber: user.rollNumber
+        rollNumber: user.rollNumber,
+        department: user.department
       }
     });
   } catch (error) {
@@ -108,9 +111,17 @@ exports.login = async (req, res) => {
 };
 
 // Fetch List of Registered Mentors for Registration Dropdown
+// Students only see mentors from their own department.
 exports.getMentors = async (req, res) => {
   try {
-    const mentors = await User.find({ role: 'MENTOR' }).select('name email');
+    const filter = { role: 'MENTOR' };
+    if (req.user) {
+      const currentUser = await User.findById(req.user.id).select('role department');
+      if (currentUser?.role === 'STUDENT' && currentUser.department) {
+        filter.department = currentUser.department;
+      }
+    }
+    const mentors = await User.find(filter).select('name email department');
     res.json(mentors);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -120,23 +131,33 @@ exports.getMentors = async (req, res) => {
 // Update User Profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, rollNumber } = req.body;
+    const { name, rollNumber, department } = req.body;
     if (name !== undefined && (typeof name !== 'string' || !name.trim())) {
       return res.status(400).json({ message: 'Name cannot be empty' });
     }
     if (rollNumber !== undefined && (typeof rollNumber !== 'string' || !rollNumber.trim())) {
       return res.status(400).json({ message: 'Roll number cannot be empty' });
     }
+    if (department !== undefined && !DEPARTMENTS.includes(department)) {
+      return res.status(400).json({ message: 'Select a valid department' });
+    }
 
-    const currentUser = await User.findById(req.user.id).select('role rollNumber');
+    const currentUser = await User.findById(req.user.id).select('role rollNumber department');
     if (!currentUser) return res.status(404).json({ message: 'User not found' });
     if (currentUser.role === 'STUDENT' && !rollNumber?.trim() && !currentUser.rollNumber?.trim()) {
       return res.status(400).json({ message: 'Roll number is required' });
+    }
+    if (
+      (currentUser.role === 'STUDENT' || currentUser.role === 'MENTOR') &&
+      !department && !currentUser.department
+    ) {
+      return res.status(400).json({ message: 'Department is required' });
     }
 
     const updates = {};
     if (name !== undefined) updates.name = name.trim();
     if (rollNumber !== undefined) updates.rollNumber = rollNumber.trim();
+    if (department !== undefined) updates.department = department;
     const user = await User.findByIdAndUpdate(
       req.user.id, 
       { $set: updates },
@@ -163,41 +184,11 @@ exports.deleteAccount = async (req, res) => {
     }
 
     if (user.role === 'STUDENT') {
-      const projects = await Project.find({ $or: [{ leader: user._id }, { student: user._id }] }).select('_id');
-      const projectIds = projects.map((project) => project._id);
-
-      await User.updateMany(
-        { activeProject: { $in: projectIds } },
-        { $set: { activeProject: null } }
-      );
-      await Task.deleteMany({ project: { $in: projectIds } });
-      await Notification.deleteMany({
-        $or: [
-          { recipient: user._id },
-          { project: { $in: projectIds } }
-        ]
-      });
-      await Project.deleteMany({ _id: { $in: projectIds } });
-      await Project.updateMany(
-        { 'members.student': user._id },
-        { $pull: { members: { student: user._id } } }
-      );
+      await deleteStudentAccount(user);
     } else if (user.role === 'MENTOR') {
-      await User.updateMany(
-        { assignedMentor: user._id },
-        { $set: { assignedMentor: null } }
-      );
-      await Project.updateMany(
-        { assignedMentor: user._id },
-        { $set: { assignedMentor: null } }
-      );
-      await Project.updateMany(
-        { preferredMentor: user._id },
-        { $set: { preferredMentor: null } }
-      );
+      await deleteMentorAccount(user);
     }
 
-    await User.deleteOne({ _id: user._id });
     res.json({ message: 'Account deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, GraduationCap, ShieldCheck, UserRound } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { DEPARTMENTS } from '../constants/departments';
 import './Auth.css';
 
 const dashboardForRole = {
@@ -26,6 +27,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState('STUDENT');
   const [rollNumber, setRollNumber] = useState('');
+  const [department, setDepartment] = useState('');
   const [error, setError] = useState('');
 
   const handleSubmit = async (event) => {
@@ -37,7 +39,7 @@ const Auth = () => {
         const response = await login(email, password, role);
         navigate(dashboardForRole[response.user.role] || '/auth');
       } else {
-        await signup(name, email, password, rollNumber);
+        await signup(name, email, password, rollNumber, department);
         navigate('/student-dashboard');
       }
     } catch (requestError) {
@@ -116,6 +118,19 @@ const Auth = () => {
                   value={rollNumber}
                   onChange={(event) => setRollNumber(event.target.value)}
                 />
+              </label>
+              <label className="auth-field">
+                <span>Department <i>*</i></span>
+                <select
+                  required
+                  value={department}
+                  onChange={(event) => setDepartment(event.target.value)}
+                >
+                  <option value="" disabled>Select your department</option>
+                  {DEPARTMENTS.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
               </label>
             </>
           )}

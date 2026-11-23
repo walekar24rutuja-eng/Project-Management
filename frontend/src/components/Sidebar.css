@@ -1,3 +1,55 @@
+:root {
+  --content-brand-height: 64px;
+}
+
+.content-brand-header {
+  position: fixed;
+  top: 0;
+  left: 248px;
+  right: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: var(--content-brand-height);
+  padding: 0 30px;
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+  box-sizing: border-box;
+}
+
+.content-brand-logo {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.content-brand-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.content-brand-text strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.content-brand-text span {
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--muted-text);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
@@ -13,29 +65,16 @@
 }
 
 .dashboard-page {
-  margin: 30px 30px 30px 278px !important;
+  margin: calc(30px + var(--content-brand-height)) 30px 30px 278px !important;
 }
 
 .dashboard-loading {
   margin-left: 278px;
-  padding: 20px;
+  padding: calc(20px + var(--content-brand-height)) 20px 20px;
 }
 
 .sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
   padding: 0 8px 28px;
-}
-
-.sidebar-brand-icon {
-  display: grid;
-  width: 38px;
-  height: 38px;
-  place-items: center;
-  border-radius: 10px;
-  background: var(--secondary);
-  color: #ffffff;
 }
 
 .sidebar-brand strong,
@@ -165,18 +204,42 @@
 }
 
 @media (max-width: 760px) {
+  :root {
+    --content-brand-height: 56px;
+  }
+
+  .content-brand-header {
+    left: 0;
+    padding: 0 16px;
+  }
+
+  .content-brand-logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .content-brand-text strong {
+    font-size: 13px;
+  }
+
+  .content-brand-text span {
+    display: none;
+  }
+
   .dashboard-page {
-    margin: 24px 16px !important;
+    margin: calc(24px + var(--content-brand-height)) 16px 24px !important;
   }
 
   .dashboard-loading {
     margin-left: 0;
+    padding-top: calc(20px + var(--content-brand-height));
   }
 
   .sidebar {
     position: static;
     width: 100%;
     min-height: auto;
+    margin-top: var(--content-brand-height);
     padding: 14px 16px;
   }
 

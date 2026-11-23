@@ -9,7 +9,7 @@ const memberSchema = new mongoose.Schema({
 
 const reportFileSchema = new mongoose.Schema({
   storageName: { type: String, required: true },
-  storageProvider: { type: String, enum: ['local', 'r2'], default: 'local' },
+  storageProvider: { type: String, enum: ['local', 'cloudinary'], default: 'local' },
   originalName: { type: String, required: true },
   contentType: { type: String, required: true },
   uploadedAt: { type: Date, default: Date.now }

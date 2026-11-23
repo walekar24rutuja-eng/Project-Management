@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const crypto = require('node:crypto');
 const { createReadStream } = require('node:fs');
-const fs = require('node:fs/promises');
 const path = require('node:path');
 const Project = require('../models/Project');
 const User = require('../models/User');
@@ -30,7 +29,7 @@ const {
   deleteReportObject,
   getReportObject,
   putReportObject
-} = require('../utils/r2ReportStorage');
+} = require('../utils/cloudinaryReportStorage');
 const {
   REPORTS_DIRECTORY,
   getReportExtension,
@@ -38,6 +37,7 @@ const {
   isValidReportStorageName,
   isSupportedReportFile
 } = require('../utils/reportFile');
+const { removeStoredReport } = require('../utils/reportCleanup');
 
 const isSameId = (first, second) => first?.toString() === second?.toString();
 const populateProject = (query) => query
@@ -48,18 +48,6 @@ const populateProject = (query) => query
 const findProjectById = (id) => (
   mongoose.isValidObjectId(id) ? Project.findById(id) : null
 );
-const removeStoredReport = async (reportFile) => {
-  if (!reportFile || !isValidReportStorageName(reportFile.storageName)) return;
-  try {
-    if (reportFile.storageProvider === 'r2') {
-      await deleteReportObject(reportFile.storageName);
-    } else {
-      await fs.unlink(path.join(REPORTS_DIRECTORY, reportFile.storageName));
-    }
-  } catch (error) {
-    if (error.code !== 'ENOENT') console.error('Failed to remove a replaced report file', error);
-  }
-};
 const reserveActiveProject = async (studentId, projectId) => {
   for (let attempt = 0; attempt < 2; attempt += 1) {
     const user = await User.findById(studentId).select('activeProject');
@@ -203,18 +191,21 @@ exports.createProject = async (req, res) => {
       return res.status(400).json({ message: 'Project topic is required' });
     }
 
+    const leader = await User.findById(req.user.id).select('name rollNumber department');
+    if (!leader) return res.status(404).json({ message: 'Student account not found' });
+    if (!leader.rollNumber?.trim()) {
+      return res.status(400).json({ message: 'Add your roll number to your profile before creating a project' });
+    }
+
     if (preferredMentor) {
       if (!mongoose.isValidObjectId(preferredMentor)) {
         return res.status(400).json({ message: 'Select a valid preferred mentor' });
       }
-      const mentor = await User.findOne({ _id: preferredMentor, role: 'MENTOR' }).select('_id');
+      const mentor = await User.findOne({ _id: preferredMentor, role: 'MENTOR' }).select('_id department');
       if (!mentor) return res.status(400).json({ message: 'Select a valid preferred mentor' });
-    }
-
-    const leader = await User.findById(req.user.id).select('name rollNumber');
-    if (!leader) return res.status(404).json({ message: 'Student account not found' });
-    if (!leader.rollNumber?.trim()) {
-      return res.status(400).json({ message: 'Add your roll number to your profile before creating a project' });
+      if (leader.department && mentor.department !== leader.department) {
+        return res.status(400).json({ message: 'Preferred mentor must be from your department' });
+      }
     }
     projectObjectId = new mongoose.Types.ObjectId();
     const reservation = await reserveActiveProject(req.user.id, projectObjectId);
@@ -424,11 +415,11 @@ exports.submitProject = async (req, res) => {
 exports.resubmitProject = exports.submitProject;
 
 exports.uploadProjectReport = async (req, res) => {
-  let uploadedR2Key;
+  let uploadedCloudinaryKey;
   try {
     if (!req.file) return res.status(400).json({ message: 'Select a report file to upload' });
     if (!isSupportedReportFile(req.file.buffer, req.file.originalname)) {
-      return res.status(400).json({ message: 'The selected file is not a valid PDF, PPT, or PPTX report' });
+      return res.status(400).json({ message: 'The selected file is not a valid PDF report' });
     }
 
     const project = await findProjectById(req.params.id);
@@ -464,18 +455,14 @@ exports.uploadProjectReport = async (req, res) => {
 
     const extension = getReportExtension(req.file.originalname);
     const storageName = `${crypto.randomUUID()}${extension}`;
-    const contentType = extension === '.pdf'
-      ? 'application/pdf'
-      : extension === '.ppt'
-        ? 'application/vnd.ms-powerpoint'
-        : 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+    const contentType = 'application/pdf';
     await putReportObject(storageName, req.file.buffer, contentType);
-    uploadedR2Key = storageName;
+    uploadedCloudinaryKey = storageName;
 
     const previousReport = project.reportFile;
     project.reportFile = {
       storageName,
-      storageProvider: 'r2',
+      storageProvider: 'cloudinary',
       originalName: getSafeOriginalName(req.file.originalname),
       contentType,
       uploadedAt: new Date()
@@ -485,7 +472,7 @@ exports.uploadProjectReport = async (req, res) => {
     project.submittedAt = new Date();
     await project.save();
 
-    uploadedR2Key = null;
+    uploadedCloudinaryKey = null;
     await removeStoredReport(previousReport);
     if (project.assignedMentor) {
       await createProjectNotifications({
@@ -499,11 +486,11 @@ exports.uploadProjectReport = async (req, res) => {
     }
     res.json(project);
   } catch (error) {
-    if (uploadedR2Key) {
+    if (uploadedCloudinaryKey) {
       try {
-        await deleteReportObject(uploadedR2Key);
+        await deleteReportObject(uploadedCloudinaryKey);
       } catch (cleanupError) {
-        console.error('Failed to clean up an incomplete R2 report upload', cleanupError);
+        console.error('Failed to clean up an incomplete Cloudinary report upload', cleanupError);
       }
     }
     res.status(500).json({ message: error.message });
@@ -523,7 +510,7 @@ exports.downloadProjectReport = async (req, res) => {
       return res.status(404).json({ message: 'No uploaded report was found' });
     }
 
-    const reportStream = reportFile.storageProvider === 'r2'
+    const reportStream = reportFile.storageProvider === 'cloudinary'
       ? (await getReportObject(reportFile.storageName)).Body
       : createReadStream(path.join(REPORTS_DIRECTORY, reportFile.storageName));
     if (!reportStream) {

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const DEPARTMENTS = require('../utils/departments');
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -10,6 +11,13 @@ const userSchema = new mongoose.Schema({
     trim: true,
     required: function requiredStudentRollNumber() {
       return this.role === 'STUDENT';
+    }
+  },
+  department: {
+    type: String,
+    enum: DEPARTMENTS,
+    required: function requiredDepartment() {
+      return this.role === 'STUDENT' || this.role === 'MENTOR';
     }
   },
   assignedMentor: { 

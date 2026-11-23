@@ -39,7 +39,7 @@ There is no nested `Project-Management-System-main/` directory. Run backend and 
 - Node.js 20 or newer
 - npm
 - MongoDB
-- Optional: Cloudflare R2 credentials for report storage
+- Optional: Cloudinary credentials for report storage
 
 ## Setup
 
@@ -51,7 +51,7 @@ npm install
 Copy-Item .env.example .env
 ```
 
-Set at least `MONGO_URI`, `JWT_SECRET`, and the initial administrator variables in `backend/.env`. `JWT_SECRET` must contain at least 32 characters. The R2 variables are optional unless report uploads should use Cloudflare R2.
+Set at least `MONGO_URI`, `JWT_SECRET`, and the initial administrator variables in `backend/.env`. `JWT_SECRET` must contain at least 32 characters. The Cloudinary variables are optional unless report uploads should use Cloudinary.
 
 Start the API:
 

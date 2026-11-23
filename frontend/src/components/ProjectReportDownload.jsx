@@ -1,37 +1,85 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import API from '../services/api';
 
+const getErrorMessage = async (requestError, fallback) => {
+  const responseData = requestError.response?.data;
+  if (responseData instanceof Blob) {
+    try {
+      const payload = JSON.parse(await responseData.text());
+      if (typeof payload.message === 'string') return payload.message;
+    } catch {
+      // The response may not contain JSON.
+    }
+  }
+  return responseData?.message || fallback;
+};
+
 const ProjectReportDownload = ({ project }) => {
-  const [downloading, setDownloading] = useState(false);
+  const [viewerUrl, setViewerUrl] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleDownload = async () => {
-    setDownloading(true);
+  useEffect(() => () => {
+    if (viewerUrl) URL.revokeObjectURL(viewerUrl);
+  }, [viewerUrl]);
+
+  const loadReport = async () => {
+    if (viewerUrl) return viewerUrl;
+    const response = await API.get(`/projects/${project._id}/report`, { responseType: 'blob' });
+    const blobUrl = URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+    setViewerUrl(blobUrl);
+    return blobUrl;
+  };
+
+  const handleView = async () => {
+    setLoading(true);
     setError('');
     try {
-      const response = await API.get(`/projects/${project._id}/report`, { responseType: 'blob' });
-      const downloadUrl = URL.createObjectURL(response.data);
+      await loadReport();
+    } catch (requestError) {
+      setError(await getErrorMessage(requestError, 'Failed to open the project report'));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownload = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const blobUrl = await loadReport();
       const link = document.createElement('a');
-      link.href = downloadUrl;
+      link.href = blobUrl;
       link.download = project.reportFile.originalName;
       document.body.appendChild(link);
       link.click();
       link.remove();
-      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 1000);
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Failed to download the project report');
+      setError(await getErrorMessage(requestError, 'Failed to download the project report'));
     } finally {
-      setDownloading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <span className="project-report-download">
-      <button type="button" onClick={handleDownload} disabled={downloading}>
-        {downloading ? 'Downloading report...' : `Download ${project.reportFile.originalName}`}
-      </button>
+    <div className="project-report-download">
+      <div className="project-report-download-actions">
+        <button type="button" onClick={handleView} disabled={loading}>
+          {loading ? 'Opening report...' : `View ${project.reportFile.originalName}`}
+        </button>
+        <button type="button" className="project-report-download-secondary" onClick={handleDownload} disabled={loading}>
+          Download
+        </button>
+      </div>
       {error && <span role="alert" className="project-report-download-error">{error}</span>}
-    </span>
+      {viewerUrl && (
+        <iframe
+          className="project-report-embed"
+          src={viewerUrl}
+          title={`${project.reportFile.originalName} preview`}
+        />
+      )}
+    </div>
   );
 };
 

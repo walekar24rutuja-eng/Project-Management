@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import API from '../services/api';
 import Sidebar from '../components/Sidebar';
+import { DEPARTMENTS } from '../constants/departments';
 
 const AdminDashboard = () => {
   const [overview, setOverview] = useState({
@@ -9,7 +10,7 @@ const AdminDashboard = () => {
     projects: [],
     unassignedProjects: []
   });
-  const [mentorForm, setMentorForm] = useState({ name: '', email: '', password: '' });
+  const [mentorForm, setMentorForm] = useState({ name: '', email: '', password: '', department: '' });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
@@ -34,7 +35,7 @@ const AdminDashboard = () => {
     event.preventDefault();
     try {
       const response = await API.post('/admin/mentors', mentorForm);
-      setMentorForm({ name: '', email: '', password: '' });
+      setMentorForm({ name: '', email: '', password: '', department: '' });
       setMessage(`Mentor account created for ${response.data.email}. Share the temporary password securely.`);
       await loadOverview();
     } catch (requestError) {
@@ -51,6 +52,50 @@ const AdminDashboard = () => {
       await loadOverview();
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Failed to assign mentor');
+    }
+  };
+
+  const handleChangeDepartment = async (student, department) => {
+    if (!department || department === student.department) return;
+    setError('');
+    try {
+      await API.put(`/admin/students/${student._id}/department`, { department });
+      setMessage(`Department updated for ${student.name}.`);
+      await loadOverview();
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Failed to update department');
+    }
+  };
+
+  const handleDeleteStudent = async (student) => {
+    const confirmed = window.confirm(
+      `Delete ${student.name}'s account permanently? This also deletes any projects they lead. This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setError('');
+    try {
+      await API.delete(`/admin/students/${student._id}`);
+      setMessage(`${student.name}'s account was deleted.`);
+      await loadOverview();
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Failed to delete student account');
+    }
+  };
+
+  const handleDeleteProject = async (project) => {
+    const confirmed = window.confirm(
+      `Delete project "${project.topicName}" (${project.projectId}) permanently? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    setError('');
+    try {
+      await API.delete(`/admin/projects/${encodeURIComponent(project.projectId)}`);
+      setMessage(`Project ${project.projectId} was deleted.`);
+      await loadOverview();
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Failed to delete project');
     }
   };
 
@@ -104,6 +149,19 @@ const AdminDashboard = () => {
                   onChange={(event) => setMentorForm({ ...mentorForm, password: event.target.value })}
                 />
               </label>
+              <label>
+                Department
+                <select
+                  required
+                  value={mentorForm.department}
+                  onChange={(event) => setMentorForm({ ...mentorForm, department: event.target.value })}
+                >
+                  <option value="" disabled>Select department</option>
+                  {DEPARTMENTS.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </label>
               <button type="submit">Create mentor</button>
             </form>
           </article>
@@ -116,11 +174,19 @@ const AdminDashboard = () => {
           </p>
           {overview.projects.length === 0 ? <p>No projects have been created.</p> : (
             <div className="admin-project-list">
-              {overview.projects.map((project) => (
+              {overview.projects.map((project) => {
+                const leaderDepartment = project.leader?.department;
+                const eligibleMentors = leaderDepartment
+                  ? overview.mentors.filter((mentor) => mentor.department === leaderDepartment)
+                  : overview.mentors;
+                return (
                 <article className="admin-project-row" key={project.projectId}>
                   <div>
                     <strong>{project.topicName}</strong>
-                    <small>{project.projectId} · {project.status} · Leader: {project.leader?.name || 'Unknown'}</small>
+                    <small>
+                      {project.projectId} · {project.status} · Leader: {project.leader?.name || 'Unknown'}
+                      {leaderDepartment ? ` (${leaderDepartment})` : ''}
+                    </small>
                   </div>
                   <label>
                     Assigned mentor
@@ -129,7 +195,7 @@ const AdminDashboard = () => {
                       onChange={(event) => handleAssignMentor(project, event.target.value)}
                     >
                       <option value="">Unassigned</option>
-                      {overview.mentors.map((mentor) => (
+                      {eligibleMentors.map((mentor) => (
                         <option key={mentor._id} value={mentor._id}>
                           {mentor.name} ({mentor.email})
                         </option>
@@ -147,8 +213,16 @@ const AdminDashboard = () => {
                       .map((student) => student.name)
                       .join(', ') || 'No members'}
                   </small>
+                  <button
+                    type="button"
+                    className="admin-danger-button"
+                    onClick={() => handleDeleteProject(project)}
+                  >
+                    Delete project
+                  </button>
                 </article>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -168,13 +242,38 @@ const AdminDashboard = () => {
                   <article className="admin-student-row" key={student._id}>
                     <div>
                       <strong>{student.name}</strong>
-                      <small>{student.email}{student.rollNumber ? ` · ${student.rollNumber}` : ''}</small>
+                      <small>
+                        {student.email}
+                        {student.rollNumber ? ` · ${student.rollNumber}` : ''}
+                        {student.department ? ` · ${student.department}` : ''}
+                      </small>
                     </div>
                     <span>
                       {studentProjects.length
                         ? studentProjects.map((project) => `${project.projectId}: ${project.topicName}`).join(' | ')
                         : 'No project'}
                     </span>
+                    <div className="admin-student-actions">
+                      <label>
+                        Department
+                        <select
+                          value={student.department || ''}
+                          onChange={(event) => handleChangeDepartment(student, event.target.value)}
+                        >
+                          <option value="" disabled>Select department</option>
+                          {DEPARTMENTS.map(({ value, label }) => (
+                            <option key={value} value={value}>{label}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <button
+                        type="button"
+                        className="admin-danger-button"
+                        onClick={() => handleDeleteStudent(student)}
+                      >
+                        Delete account
+                      </button>
+                    </div>
                   </article>
                 );
               })}
@@ -192,7 +291,7 @@ const AdminDashboard = () => {
                 ).length;
                 return (
                   <li key={mentor._id}>
-                    {mentor.name} ({mentor.email}) — {assignedCount} assigned project{assignedCount === 1 ? '' : 's'}
+                    {mentor.name} ({mentor.email}){mentor.department ? ` · ${mentor.department}` : ''} — {assignedCount} assigned project{assignedCount === 1 ? '' : 's'}
                   </li>
                 );
               })}

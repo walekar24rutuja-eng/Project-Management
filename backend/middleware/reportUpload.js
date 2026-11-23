@@ -6,8 +6,8 @@ const upload = multer({
   limits: { fileSize: REPORT_MAX_SIZE_BYTES, files: 1 },
   fileFilter: (req, file, callback) => {
     const extension = getReportExtension(file.originalname);
-    if (!['.pdf', '.ppt', '.pptx'].includes(extension)) {
-      callback(new Error('Only PDF, PPT, and PPTX files are allowed'));
+    if (extension !== '.pdf') {
+      callback(new Error('Only PDF files are allowed'));
       return;
     }
     callback(null, true);

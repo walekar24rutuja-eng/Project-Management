@@ -6,6 +6,7 @@ import './StudentDashboard.css';
 import ProjectReportDownload from '../components/ProjectReportDownload';
 import MilestoneProgress from '../components/MilestoneProgress';
 import { useAuth } from '../context/AuthContext';
+import { DEPARTMENTS } from '../constants/departments';
 
 const StudentDashboard = () => {
   const notificationPreviewCount = 3;
@@ -22,7 +23,10 @@ const StudentDashboard = () => {
   const [preferredMentor, setPreferredMentor] = useState('');
   const [joinProjectId, setJoinProjectId] = useState('');
   const [submissionLinks, setSubmissionLinks] = useState({});
+  const [uploadingProjectId, setUploadingProjectId] = useState('');
+  const [uploadProgress, setUploadProgress] = useState(null);
   const [rollNumber, setRollNumber] = useState(user?.rollNumber || '');
+  const [department, setDepartment] = useState(user?.department || '');
 
   const fetchStudentData = useCallback(async () => {
     try {
@@ -61,15 +65,16 @@ const StudentDashboard = () => {
   const activeProject = projects.find((project) => project.status !== 'APPROVED');
   const canStartProject = !activeProject;
   const needsRollNumber = !user?.rollNumber?.trim();
+  const needsDepartment = !user?.department;
 
   const handleSaveRollNumber = async (event) => {
     event.preventDefault();
     try {
-      await updateProfile({ rollNumber });
-      setMessage('Roll number saved to your profile.');
+      await updateProfile({ rollNumber, department: department || undefined });
+      setMessage('Profile details saved.');
       setError('');
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Failed to save your roll number');
+      setError(requestError.response?.data?.message || 'Failed to save your profile details');
     }
   };
 
@@ -112,6 +117,37 @@ const StudentDashboard = () => {
     }
   };
 
+  const handleReportUpload = async (event, project) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const file = formData.get('report');
+    if (!file || typeof file === 'string' || !file.name || !/\.pdf$/i.test(file.name) || file.size === 0 || file.size > 10 * 1024 * 1024) {
+      setError('Choose a PDF file of 10 MB or smaller.');
+      return;
+    }
+
+    setError('');
+    setMessage('');
+    setUploadingProjectId(project._id);
+    setUploadProgress(0);
+    try {
+      await API.post(`/projects/${project._id}/report`, formData, {
+        onUploadProgress: ({ loaded, total }) => {
+          if (total) setUploadProgress(Math.round(100 * loaded / total));
+        }
+      });
+      form.reset();
+      setMessage('Report submitted to your mentor for review.');
+      await fetchStudentData();
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Failed to submit the report');
+    } finally {
+      setUploadingProjectId('');
+      setUploadProgress(null);
+    }
+  };
+
   const handleJoinDecision = async (project, studentId, status) => {
     try {
       await API.put(`/projects/${project._id}/members/${studentId}`, { status });
@@ -137,20 +173,37 @@ const StudentDashboard = () => {
           {error && <div role="alert" className="students-error">{error}</div>}
           {message && <div role="status" className="student-success">{message}</div>}
 
-          {needsRollNumber && (
+          {(needsRollNumber || needsDepartment) && (
             <section className="student-panel">
               <h3>Complete your student profile</h3>
-              <p>A roll number is required to create a project, join a team, or submit project work.</p>
+              <p>A roll number and department are required to create a project, join a team, or submit project work.</p>
               <form className="student-form" onSubmit={handleSaveRollNumber}>
-                <label>
-                  Roll Number
-                  <input
-                    required
-                    value={rollNumber}
-                    onChange={(event) => setRollNumber(event.target.value)}
-                  />
-                </label>
-                <button type="submit">Save roll number</button>
+                {needsRollNumber && (
+                  <label>
+                    Roll Number
+                    <input
+                      required
+                      value={rollNumber}
+                      onChange={(event) => setRollNumber(event.target.value)}
+                    />
+                  </label>
+                )}
+                {needsDepartment && (
+                  <label>
+                    Department
+                    <select
+                      required
+                      value={department}
+                      onChange={(event) => setDepartment(event.target.value)}
+                    >
+                      <option value="" disabled>Select your department</option>
+                      {DEPARTMENTS.map(({ value, label }) => (
+                        <option key={value} value={value}>{label}</option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+                <button type="submit">Save profile</button>
               </form>
             </section>
           )}
@@ -268,6 +321,28 @@ const StudentDashboard = () => {
                     </form>
                   )}
 
+                  {isLeader && ['DRAFT', 'REJECTED', 'APPROVED'].includes(project.status) && (
+                    <form className="student-form student-report-upload" onSubmit={(event) => handleReportUpload(event, project)}>
+                      <label>
+                        Upload project report (PDF, up to 10 MB)
+                        <input
+                          type="file"
+                          name="report"
+                          accept="application/pdf,.pdf"
+                          required
+                          disabled={Boolean(uploadingProjectId)}
+                        />
+                      </label>
+                      {project.status === 'APPROVED' && <p>Submitting a report reopens this project for mentor review.</p>}
+                      {uploadingProjectId === project._id && uploadProgress !== null && (
+                        <progress value={uploadProgress} max="100" aria-label="Report upload progress" />
+                      )}
+                      <button type="submit" disabled={Boolean(uploadingProjectId)}>
+                        {uploadingProjectId === project._id ? 'Uploading...' : 'Submit report for review'}
+                      </button>
+                    </form>
+                  )}
+
                   {isLeader && pendingMembers.length > 0 && (
                     <section className="join-request-list">
                       <h5>Membership requests</h5>
@@ -290,7 +365,7 @@ const StudentDashboard = () => {
           </section>
 
           </div>
-          {canStartProject && !needsRollNumber && (
+          {canStartProject && !needsRollNumber && !needsDepartment && (
             <aside className="student-project-options student-actions-sidebar" aria-label="Create or join a project">
               <article className="student-panel">
                 <h3>Create a project</h3>
@@ -313,7 +388,7 @@ const StudentDashboard = () => {
                       <option value="">No preference</option>
                       {mentors.map((mentor) => (
                         <option key={mentor._id} value={mentor._id}>
-                          {mentor.name} ({mentor.email})
+                          {mentor.name} ({mentor.email}){mentor.department ? ` · ${mentor.department}` : ''}
                         </option>
                       ))}
                     </select>

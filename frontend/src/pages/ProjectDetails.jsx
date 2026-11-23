@@ -100,8 +100,8 @@ const ProjectDetails = () => {
     const formData = new FormData(event.currentTarget);
     const file = formData.get('report');
     setMessage('');
-    if (!/\.(pdf|pptx?)$/i.test(file.name) || file.size > 10 * 1024 * 1024) {
-      setError('Choose a PDF, PPT, or PPTX file of 10 MB or smaller.');
+    if (!/\.pdf$/i.test(file.name) || file.size > 10 * 1024 * 1024) {
+      setError('Choose a PDF file of 10 MB or smaller.');
       return;
     }
 
@@ -261,8 +261,8 @@ const ProjectDetails = () => {
           {isLeader && ['DRAFT', 'REJECTED', 'APPROVED'].includes(project.status) && (
             <form key={project._id} className="project-edit-form" onSubmit={handleReportSubmit}>
               <label>
-                Report file (PDF, PPT, or PPTX, up to 10 MB)
-                <input type="file" name="report" accept=".pdf,.ppt,.pptx" required disabled={saving} />
+                Report file (PDF only, up to 10 MB)
+                <input type="file" name="report" accept="application/pdf,.pdf" required disabled={saving} />
               </label>
               {isApproved && <p>Submitting a report reopens this project for mentor review.</p>}
               {uploadProgress !== null && <progress value={uploadProgress} max="100" aria-label="Report upload progress" />}

@@ -119,7 +119,55 @@ test('student roll numbers are required while mentor and admin roll numbers rema
     name: 'Mentor',
     email: 'mentor@example.test',
     password: 'hashed',
-    role: 'MENTOR'
+    role: 'MENTOR',
+    department: 'IT'
   });
   await mentorWithoutRoll.validate();
+
+  const adminWithoutRoll = new User({
+    name: 'Admin',
+    email: 'admin@example.test',
+    password: 'hashed',
+    role: 'ADMIN'
+  });
+  await adminWithoutRoll.validate();
+});
+
+test('students and mentors require a known department while admins do not', async () => {
+  const studentWithoutDepartment = new User({
+    name: 'Student',
+    email: 'student@example.test',
+    password: 'hashed',
+    role: 'STUDENT',
+    rollNumber: '21IT001'
+  });
+  await assert.rejects(studentWithoutDepartment.validate(), (error) => Boolean(error.errors.department));
+
+  const mentorWithoutDepartment = new User({
+    name: 'Mentor',
+    email: 'mentor@example.test',
+    password: 'hashed',
+    role: 'MENTOR'
+  });
+  await assert.rejects(mentorWithoutDepartment.validate(), (error) => Boolean(error.errors.department));
+
+  const unknownDepartment = new User({
+    name: 'Student',
+    email: 'student@example.test',
+    password: 'hashed',
+    role: 'STUDENT',
+    rollNumber: '21IT001',
+    department: 'ARTS'
+  });
+  await assert.rejects(unknownDepartment.validate(), (error) => Boolean(error.errors.department));
+
+  const studentWithDepartment = new User({
+    name: 'Student',
+    email: 'student@example.test',
+    password: 'hashed',
+    role: 'STUDENT',
+    rollNumber: '21IT001',
+    department: 'CS'
+  });
+  await studentWithDepartment.validate();
 });

@@ -11,7 +11,7 @@ This document describes the features currently implemented in the Final Year Pro
 - Choose a preferred mentor when creating a project.
 - Review current projects, project status, team membership, mentor feedback, submitted links, and uploaded reports.
 - Approve or reject join requests for projects they lead.
-- Submit and resubmit project links or PDF/PPT/PPTX reports (up to 10 MB) from Project Details as the project leader.
+- Submit and resubmit project links or PDF reports (up to 10 MB) from Project Details as the project leader.
 - View milestones, save progress follow-ups, and receive review notifications for projects they belong to.
 - Update their name or roll number from the profile API.
 
@@ -42,7 +42,7 @@ Students do not have different account roles for team leader and team member. Le
 3. The leader shares the project ID. Another student can use it to request membership; knowing the ID does not grant project access.
 4. The leader approves or rejects each pending request. Only accepted members can access team project information and tasks.
 5. An admin assigns a mentor to the project. The student's preferred mentor is a preference, not the actual assignment.
-6. Only the leader can submit the project's HTTP/HTTPS link or upload a PDF/PPT/PPTX report (up to 10 MB). Submission moves the project to `PENDING` if unassigned, or `ASSIGNED` if a mentor is already assigned.
+6. Only the leader can submit the project's HTTP/HTTPS link or upload a PDF report (up to 10 MB). Submission moves the project to `PENDING` if unassigned, or `ASSIGNED` if a mentor is already assigned.
 7. Assigning a mentor to a submitted `PENDING` project changes it to `ASSIGNED`; unassigning its mentor returns it to `PENDING`.
 8. The assigned mentor reviews the submitted project:
    - **Approved:** the project becomes `APPROVED`. Team members are no longer considered to have an ongoing project and may start or join another project.
@@ -128,7 +128,7 @@ All `/api/projects` routes require a JWT. Project routes are scoped by the calle
 | `PUT` | `/:id/members/:studentId` | Project leader accepts or rejects a pending membership request. |
 | `PUT` | `/:id/submit` | Project leader submits a project link. |
 | `PUT` | `/:id/resubmit` | Project leader resubmits a rejected project link. |
-| `POST` | `/:id/report` | Project leader uploads or resubmits a PDF/PPT/PPTX report (maximum 10 MB). |
+| `POST` | `/:id/report` | Project leader uploads or resubmits a PDF report (maximum 10 MB). |
 | `GET` | `/:id/report` | Download a report when the caller is a project member, assigned mentor, or admin. |
 | `PUT` | `/:id/review` | Assigned mentor approves or rejects a submitted project. |
 | `POST` | `/:id/tasks` | Assigned mentor creates a task. |
@@ -143,8 +143,8 @@ For project-specific routes written with `:id`, the current backend expects the 
 
 ## Implementation boundaries
 
-- New uploaded reports are stored in a private Cloudflare R2 bucket and served through an authenticated, project-authorized download endpoint. Existing local reports remain downloadable from `backend/uploads/reports/`; that directory is excluded from version control.
-- Report uploads require `R2_ACCOUNT_ID`, `R2_BUCKET_NAME`, `R2_ACCESS_KEY_ID`, and `R2_SECRET_ACCESS_KEY` in the backend environment. Use an R2 S3 token scoped to the report bucket with Object Read & Write permissions.
+- New uploaded reports are stored in Cloudinary under the `authenticated` delivery type and served through an authenticated, project-authorized download endpoint (the backend fetches the file using a signed Cloudinary URL and streams it to the client). Existing local reports remain downloadable from `backend/uploads/reports/`; that directory is excluded from version control.
+- Report uploads require `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` in the backend environment.
 - Review notifications are in-app only; email delivery is not implemented.
 - Notifications have a `read` field in the data model, but there is currently no UI/API action to mark them read.
 - Admins can assign mentors and view project data, but do not perform project reviews or manage milestones as a mentor.
