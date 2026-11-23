@@ -90,7 +90,7 @@ npm run build
 
 ## Vercel deployment
 
-Deploy the frontend and backend as separate Vercel projects. For the backend, either deploy the repository root (using the root `vercel.json`) or set the project root directory to `backend` (using `backend/vercel.json`).
+Deploy the frontend and backend as separate Vercel projects. The backend can use the repository root (using the root `vercel.json`) or `backend` as its project root (using `backend/vercel.json`). Set the frontend project's root directory to `frontend`; its `vercel.json` provides fallback routing for React Router pages.
 
 In the backend Vercel project, set these environment variables:
 
@@ -113,7 +113,7 @@ In the frontend Vercel project, set `VITE_API_URL` to the deployed backend URL i
 VITE_API_URL=https://project-management-api.vercel.app/api
 ```
 
-Set the frontend project root directory to `frontend`, then redeploy after changing environment variables.
+Redeploy the frontend after setting `VITE_API_URL`. Open the frontend project's URL for the UI; the backend project's root URL is API-only and does not serve the React homepage.
 
 ## Main documentation
 
