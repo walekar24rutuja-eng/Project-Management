@@ -90,7 +90,7 @@ npm run build
 
 ## Vercel deployment
 
-Deploy the `frontend/` directory and `backend/` directory as separate Vercel projects.
+Deploy the frontend and backend as separate Vercel projects. For the backend, either deploy the repository root (using the root `vercel.json`) or set the project root directory to `backend` (using `backend/vercel.json`).
 
 In the backend Vercel project, set these environment variables:
 
@@ -105,7 +105,7 @@ CLOUDINARY_API_KEY=<optional>
 CLOUDINARY_API_SECRET=<optional>
 ```
 
-Set the backend project root directory to `backend`. The included `vercel.json` exports the Express application as a serverless function.
+The backend Vercel configuration routes requests to the exported Express application as a serverless function.
 
 In the frontend Vercel project, set `VITE_API_URL` to the deployed backend URL including `/api`, for example:
 
