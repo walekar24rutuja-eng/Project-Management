@@ -106,6 +106,24 @@ const Sidebar = () => {
               Students
             </button>
           )}
+          {user?.role === 'ADMIN' && (
+            <>
+              <button
+                className={`sidebar-link ${location.pathname === '/admin/students' ? 'active' : ''}`}
+                onClick={() => navigate('/admin/students')}
+              >
+                <Users size={18} />
+                Students
+              </button>
+              <button
+                className={`sidebar-link ${location.pathname === '/admin/mentors' ? 'active' : ''}`}
+                onClick={() => navigate('/admin/mentors')}
+              >
+                <Users size={18} />
+                Mentors
+              </button>
+            </>
+          )}
         </nav>
 
         <div className="sidebar-footer">

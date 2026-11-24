@@ -5,6 +5,7 @@ const {
   assignMentor,
   updateStudentDepartment,
   deleteStudent,
+  deleteMentor,
   deleteProject
 } = require('../controllers/adminController');
 const { protect, authorizeRoles } = require('../middleware/authMiddleware');
@@ -17,6 +18,7 @@ router.post('/mentors', createMentor);
 router.put('/projects/:projectId/mentor', assignMentor);
 router.put('/students/:studentId/department', updateStudentDepartment);
 router.delete('/students/:studentId', deleteStudent);
+router.delete('/mentors/:mentorId', deleteMentor);
 router.delete('/projects/:projectId', deleteProject);
 
 module.exports = router;

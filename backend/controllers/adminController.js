@@ -6,7 +6,7 @@ const Notification = require('../models/Notification');
 const User = require('../models/User');
 const { getMentorAssignmentStatus } = require('../utils/projectAccess');
 const { createProjectNotifications, getProjectStudentIds } = require('../services/projectNotificationService');
-const { deleteStudentAccount } = require('../utils/accountDeletion');
+const { deleteStudentAccount, deleteMentorAccount } = require('../utils/accountDeletion');
 const { removeStoredReport } = require('../utils/reportCleanup');
 const DEPARTMENTS = require('../utils/departments');
 
@@ -163,6 +163,21 @@ exports.deleteStudent = async (req, res) => {
 
     await deleteStudentAccount(student);
     res.json({ message: 'Student account deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.deleteMentor = async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.mentorId)) {
+      return res.status(400).json({ message: 'Invalid mentor account' });
+    }
+    const mentor = await User.findOne({ _id: req.params.mentorId, role: 'MENTOR' });
+    if (!mentor) return res.status(404).json({ message: 'Mentor not found' });
+
+    await deleteMentorAccount(mentor);
+    res.json({ message: 'Mentor account deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

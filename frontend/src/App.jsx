@@ -6,6 +6,8 @@ import MentorDashboard from './pages/MentorDashboard';
 import Meetings from './pages/Meetings';
 import StudentList from './pages/StudentList';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminStudentList from './pages/AdminStudentList';
+import AdminMentorList from './pages/AdminMentorList';
 import Notifications from './pages/Notifications';
 import ProjectDetails from './pages/ProjectDetails';
 import MentorReviews from './pages/MentorReviews';
@@ -34,6 +36,12 @@ function App() {
           } />
           <Route path="/admin-dashboard" element={
             <ProtectedRoute allowedRoles={['ADMIN']}><AdminDashboard /></ProtectedRoute>
+          } />
+          <Route path="/admin/students" element={
+            <ProtectedRoute allowedRoles={['ADMIN']}><AdminStudentList /></ProtectedRoute>
+          } />
+          <Route path="/admin/mentors" element={
+            <ProtectedRoute allowedRoles={['ADMIN']}><AdminMentorList /></ProtectedRoute>
           } />
           <Route path="/meetings" element={
             <ProtectedRoute allowedRoles={['STUDENT', 'MENTOR']}><Meetings /></ProtectedRoute>

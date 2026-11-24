@@ -31,13 +31,30 @@ const deleteStudentAccount = async (user) => {
 };
 
 const deleteMentorAccount = async (user) => {
+  await Notification.deleteMany({ recipient: user._id });
   await User.updateMany(
     { assignedMentor: user._id },
     { $set: { assignedMentor: null } }
   );
   await Project.updateMany(
     { assignedMentor: user._id },
-    { $set: { assignedMentor: null } }
+    [
+      {
+        $set: {
+          assignedMentor: null,
+          status: {
+            $switch: {
+              branches: [
+                { case: { $eq: ['$status', 'APPROVED'] }, then: 'APPROVED' },
+                { case: { $eq: ['$status', 'REJECTED'] }, then: 'REJECTED' },
+                { case: { $eq: ['$status', 'DRAFT'] }, then: 'DRAFT' }
+              ],
+              default: 'PENDING'
+            }
+          }
+        }
+      }
+    ]
   );
   await Project.updateMany(
     { preferredMentor: user._id },
