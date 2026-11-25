@@ -54,7 +54,8 @@ const deleteMentorAccount = async (user) => {
           }
         }
       }
-    ]
+    ],
+    { updatePipeline: true }
   );
   await Project.updateMany(
     { preferredMentor: user._id },
